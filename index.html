@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pasteit</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e0e0f; --bg2: #131314; --bg3: #1a1a1b;
+      --border: #2a2a2a; --text: #e8e6e1; --muted: #555;
+      --accent: #c8f07d; --danger: #ff6b6b;
+      --mono: 'IBM Plex Mono', monospace;
+      --serif: 'Instrument Serif', serif;
+    }
+    html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: var(--mono); }
+    ::selection { background: #c8f07d22; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    .page { display: none; }
+    .page.active { display: block; }
+    header { border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #0e0e0fee; backdrop-filter: blur(10px); z-index: 100; }
+    .logo { font-family: var(--serif); font-style: italic; color: var(--accent); font-size: 20px; cursor: pointer; }
+    .logo span { color: var(--muted); font-size: 12px; font-family: var(--mono); font-style: normal; margin-left: 8px; }
+    .hbtns { display: flex; gap: 8px; }
+    .btn { font-family: var(--mono); font-size: 12px; border-radius: 6px; padding: 8px 16px; cursor: pointer; border: none; transition: all 0.15s; }
+    .btn-primary { background: var(--accent); color: var(--bg); font-weight: 500; }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); }
+    .wrap { max-width: 700px; margin: 0 auto; padding: 40px 20px; }
+    .field { margin-bottom: 16px; }
+    .field label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 7px; }
+    textarea, input[type=text], input[type=password] { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--mono); font-size: 14px; padding: 14px; outline: none; transition: border-color 0.2s; }
+    textarea { min-height: 180px; resize: vertical; line-height: 1.7; }
+    textarea:focus, input:focus { border-color: #c8f07d44; }
+    textarea::placeholder, input::placeholder { color: #333; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media(max-width:540px) { .row2 { grid-template-columns: 1fr; } }
+    .slug-wrap { display: flex; align-items: center; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .slug-pre { padding: 14px 12px; color: #444; font-size: 13px; border-right: 1px solid var(--border); white-space: nowrap; }
+    .slug-wrap input { border: none; border-radius: 0; flex: 1; }
+    .error { color: var(--danger); font-size: 13px; margin: 10px 0; }
+    .actions { margin-top: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .hint { font-size: 11px; color: #2e2e2e; margin-top: 16px; line-height: 1.7; }
+    .promo-banner { border-radius: 12px; overflow: hidden; margin-bottom: 28px; border: 1px solid #2a1a3a; }
+    .promo-banner img { width: 100%; display: block; }
+    .promo-tg { display: flex; align-items: center; gap: 14px; background: linear-gradient(135deg, #1a0a2e, #2d0a4a); border: 1px solid #6b21a8; border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; text-decoration: none; transition: all 0.2s; color: var(--text); }
+    .promo-tg:hover { border-color: #a855f7; }
+    .tg-icon { font-size: 26px; flex-shrink: 0; }
+    .tg-text strong { color: #c084fc; display: block; font-size: 15px; margin-bottom: 3px; }
+    .tg-text span { font-size: 12px; color: #888; }
+    .links-list { display: flex; flex-direction: column; gap: 12px; }
+    .link-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; transition: border-color 0.2s; }
+    .link-card:hover { border-color: #3a3a3a; }
+    .link-title { font-size: 15px; color: var(--text); font-weight: 500; }
+    .link-btn { background: var(--accent); color: var(--bg); border: none; border-radius: 6px; padding: 10px 20px; font-family: var(--mono); font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-block; transition: opacity 0.15s; flex-shrink: 0; }
+    .link-btn:hover { opacity: 0.85; }
+    .success-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .success-box { max-width: 500px; width: 100%; }
+    .s-icon { font-size: 36px; margin-bottom: 10px; }
+    .s-title { font-family: var(--serif); font-style: italic; font-size: 28px; color: var(--accent); margin-bottom: 6px; }
+    .s-sub { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+    .copy-row { margin-bottom: 14px; }
+    .copy-row label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 6px; }
+    .copy-field { display: flex; gap: 8px; }
+    .copy-val { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 14px; font-size: 13px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mono); }
+    .warn { font-size: 11px; color: #c8f07d55; margin-top: 5px; }
+    .s-btns { display: flex; gap: 10px; margin-top: 24px; }
+    .s-btns .btn { flex: 1; text-align: center; }
+    .view-wrap { max-width: 700px; margin: 0 auto; padding: 36px 20px 60px; }
+    .view-meta { margin-top: 40px; padding-top: 16px; border-top: 1px solid #1a1a1a; color: #2e2e2e; font-size: 11px; letter-spacing: 1px; }
+    .ad-unit { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; }
+    .ad-label { font-size: 10px; color: #2e2e2e; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+    .nf { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; gap: 10px; }
+    .nf .big { font-size: 56px; color: #1e1e1f; }
+    .nf h2 { font-family: var(--serif); font-style: italic; color: var(--accent); font-size: 24px; }
+    .nf p { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+    .edit-wrap { max-width: 700px; margin: 0 auto; padding: 36px 20px; }
+  </style>
+</head>
+<body>
+
+<!-- EDITOR -->
+<div class="page active" id="page-editor">
+  <header>
+    <span class="logo" onclick="showEditor()">pasteit <span>/ new</span></span>
+  </header>
+  <div class="wrap">
+    <div class="field">
+      <label>Title (optional)</label>
+      <input type="text" id="ed-title" placeholder="e.g. DummyGf Collection" />
+    </div>
+    <div class="field">
+      <label>Links &mdash; one per line, label above each</label>
+      <textarea id="ed-content" placeholder="Part 1&#10;https://1024terabox.com/s/abc123&#10;&#10;Part 2&#10;https://1024terabox.com/s/xyz456"></textarea>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Custom URL (optional)</label>
+        <div class="slug-wrap">
+          <span class="slug-pre">pasteit/</span>
+          <input type="text" id="ed-slug" placeholder="my-page" oninput="this.value=this.value.replace(/[^a-z0-9-]/gi,'').toLowerCase()" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Edit Key (save this!)</label>
+        <input type="text" id="ed-key" placeholder="auto-generated if empty" />
+      </div>
+    </div>
+    <div class="error" id="ed-error" style="display:none"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="pub-btn" onclick="publish()">publish &rarr;</button>
+    </div>
+    <p class="hint">Links are auto-shortened. Put a label on the line above each link — it shows as the button title.</p>
+    <div class="ad-unit">
+      <div class="ad-label">advertisement</div>
+      <iframe data-aa='2436321' src='//acceptable.a-ads.com/2436321/?size=Adaptive' style='border:0;padding:0;width:70%;height:auto;overflow:hidden;display:block;margin:auto'></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="page" id="page-success">
+  <div class="success-wrap">
+    <div class="success-box">
+      <div class="s-icon">&#10003;</div>
+      <div class="s-title">Published!</div>
+      <div class="s-sub">Your paste is live. Share this link.</div>
+      <div class="copy-row">
+        <label>View URL</label>
+        <div class="copy-field">
+          <div class="copy-val" id="s-url"></div>
+          <button class="btn btn-ghost" onclick="copyEl('s-url',this)">copy</button>
+        </div>
+      </div>
+      <div class="copy-row">
+        <label>Edit Key</label>
+        <div class="copy-field">
+          <div class="copy-val" id="s-key"></div>
+          <button class="btn btn-ghost" onclick="copyEl('s-key',this)">copy</button>
+        </div>
+        <div class="warn">&#9888; Save this — needed to edit later</div>
+      </div>
+      <div class="s-btns">
+        <button class="btn btn-primary" id="s-view-btn">view paste &rarr;</button>
+        <button class="btn btn-ghost" onclick="showEditor()">new paste</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW -->
+<div class="page" id="page-view">
+  <header>
+    <span class="logo" onclick="showEditor()">pasteit <span id="v-slug"></span></span>
+    <div class="hbtns">
+      <button class="btn btn-ghost" id="v-copy-btn" onclick="copyLink()">copy link</button>
+      <button class="btn btn-ghost" onclick="goEdit()">edit</button>
+      <button class="btn btn-primary" onclick="showEditor()">+ new</button>
+    </div>
+  </header>
+  <div class="view-wrap">
+    <div class="promo-banner">
+      <img src="https://files.catbox.moe/khwn5l.png" alt="JUSTFAN" />
+    </div>
+    <a class="promo-tg" href="https://t.me/excJustfan" target="_blank" rel="noopener">
+      <span class="tg-icon">&#9992;&#65039;</span>
+      <div class="tg-text">
+        <strong>Join JUSTFAN on Telegram</strong>
+        <span>@excJustfan &mdash; Drop your request &amp; get your link!</span>
+      </div>
+    </a>
+    <div id="v-links" class="links-list"></div>
+    <div class="view-meta" id="v-meta"></div>
+    <div class="ad-unit">
+      <div class="ad-label">advertisement</div>
+      <iframe data-aa='2436321' src='//acceptable.a-ads.com/2436321/?size=Adaptive' style='border:0;padding:0;width:70%;height:auto;overflow:hidden;display:block;margin:auto'></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT -->
+<div class="page" id="page-edit">
+  <header>
+    <span class="logo" onclick="showEditor()">pasteit <span id="e-slug"></span></span>
+    <button class="btn btn-ghost" onclick="cancelEdit()">&larr; cancel</button>
+  </header>
+  <div class="edit-wrap">
+    <div class="field"><label>Title</label><input type="text" id="e-title" /></div>
+    <div class="field"><label>Links &mdash; one per line</label><textarea id="e-content" style="min-height:200px"></textarea></div>
+    <div class="field"><label>Edit Key</label><input type="password" id="e-key" placeholder="Enter your edit key" /></div>
+    <div class="error" id="e-error" style="display:none"></div>
+    <div class="actions"><button class="btn btn-primary" id="save-btn" onclick="saveEdit()">save &rarr;</button></div>
+  </div>
+</div>
+
+<!-- NOT FOUND -->
+<div class="page" id="page-nf">
+  <div class="nf">
+    <div class="big">&#8709;</div>
+    <h2>Not found</h2>
+    <p>This paste doesn't exist or was deleted.</p>
+    <button class="btn btn-primary" onclick="showEditor()">new paste &rarr;</button>
+  </div>
+</div>
+
+<script>
+  var SB_URL     = 'https://zsdshgakcaauwytidkzr.supabase.co';
+  var SB_KEY     = 'sb_publishable_eFdfiydZC1HfDfRs1Qp4Fg_A2Mxx8mt';
+  var TABLE      = 'pastes';
+  var SHORT_API  = '955d1b836398446942234990e6764f851319afe4';
+  var SHORT_BASE = 'https://teraboxlinks.com/api';
+  var hdrs = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+
+  function dbGet(slug) {
+    return fetch(SB_URL + '/rest/v1/' + TABLE + '?slug=eq.' + encodeURIComponent(slug) + '&select=*', { headers: hdrs })
+      .then(function(r){ return r.json(); })
+      .then(function(d){ return (d && d.length) ? d[0] : null; });
+  }
+  function dbInsert(row) {
+    return fetch(SB_URL + '/rest/v1/' + TABLE, { method:'POST', headers: Object.assign({}, hdrs, { Prefer:'return=minimal' }), body: JSON.stringify(row) })
+      .then(function(r){ return r.ok; });
+  }
+  function dbUpdate(slug, content, title) {
+    return fetch(SB_URL + '/rest/v1/' + TABLE + '?slug=eq.' + encodeURIComponent(slug), { method:'PATCH', headers: Object.assign({}, hdrs, { Prefer:'return=minimal' }), body: JSON.stringify({ content: content, title: title }) })
+      .then(function(r){ return r.ok; });
+  }
+
+  function shortenOne(url) {
+    return fetch(SHORT_BASE + '?api=' + SHORT_API + '&url=' + encodeURIComponent(url) + '&format=text')
+      .then(function(r){ return r.text(); })
+      .then(function(t){ t = t.trim(); return (t && t.startsWith('http')) ? t : url; })
+      .catch(function(){ return url; });
+  }
+
+  function parseLines(text) {
+    var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+    var items = [], pendingLabel = '';
+    for (var i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith('http')) {
+        items.push({ label: pendingLabel, url: lines[i] });
+        pendingLabel = '';
+      } else {
+        pendingLabel = lines[i];
+      }
+    }
+    return items;
+  }
+
+  function shortenItems(items) {
+    var promises = items.map(function(item) {
+      return shortenOne(item.url).then(function(short) {
+        return { label: item.label, url: short };
+      });
+    });
+    return Promise.all(promises);
+  }
+
+  function genSlug() {
+    var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    var s = '';
+    for (var i = 0; i < 8; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s;
+  }
+
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+    document.getElementById('page-' + id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function showErr(id, msg) { var e = document.getElementById(id); e.textContent = '\u26a0 ' + msg; e.style.display = 'block'; }
+  function hideErr(id) { document.getElementById(id).style.display = 'none'; }
+  function copyEl(id, btn) {
+    navigator.clipboard.writeText(document.getElementById(id).textContent);
+    var o = btn.textContent; btn.textContent = 'copied!'; btn.style.color = 'var(--accent)';
+    setTimeout(function(){ btn.textContent = o; btn.style.color = ''; }, 2000);
+  }
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  var currentSlug = '', currentKey = '';
+
+  function showEditor() { window.location.hash = ''; showPage('editor'); }
+
+  function route() {
+    var h = window.location.hash;
+    if (!h || h === '#') { showPage('editor'); return; }
+    if (h.startsWith('#view/')) loadView(h.slice(6));
+    else if (h.startsWith('#edit/')) loadEditPage(h.slice(6));
+  }
+
+  function publish() {
+    var raw   = document.getElementById('ed-content').value.trim();
+    var title = document.getElementById('ed-title').value.trim();
+    if (!raw) { showErr('ed-error', 'Add at least one link.'); return; }
+    var items = parseLines(raw);
+    if (!items.length) { showErr('ed-error', 'No valid links found. Links must start with http.'); return; }
+    var slug = document.getElementById('ed-slug').value.trim() || genSlug();
+    var key  = document.getElementById('ed-key').value.trim()  || genSlug();
+    var btn  = document.getElementById('pub-btn');
+    btn.textContent = 'shortening...'; btn.disabled = true;
+    hideErr('ed-error');
+    shortenItems(items).then(function(shortened) {
+      btn.textContent = 'publishing...';
+      return dbGet(slug).then(function(existing) {
+        if (existing) { showErr('ed-error', 'URL taken, try another.'); btn.textContent = 'publish \u2192'; btn.disabled = false; return; }
+        return dbInsert({ slug: slug, content: JSON.stringify(shortened), title: title, edit_key: key }).then(function(ok) {
+          if (!ok) throw new Error();
+          currentSlug = slug;
+          var viewUrl = location.origin + location.pathname + '#view/' + slug;
+          document.getElementById('s-url').textContent = viewUrl;
+          document.getElementById('s-key').textContent = key;
+          document.getElementById('s-view-btn').onclick = function(){ location.hash = 'view/' + slug; };
+          showPage('success');
+          btn.textContent = 'publish \u2192'; btn.disabled = false;
+        });
+      });
+    }).catch(function() {
+      showErr('ed-error', 'Publish failed. Check your connection.');
+      btn.textContent = 'publish \u2192'; btn.disabled = false;
+    });
+  }
+
+  function loadView(slug) {
+    currentSlug = slug;
+    dbGet(slug).then(function(paste) {
+      if (!paste) { showPage('nf'); return; }
+      currentKey = paste.edit_key;
+      document.getElementById('v-slug').textContent = '/ ' + slug;
+      var items = [];
+      try { items = JSON.parse(paste.content); } catch(e) {
+        items = paste.content.split('\n').filter(function(l){ return l.trim().startsWith('http'); }).map(function(u){ return { label:'', url: u.trim() }; });
+      }
+      var container = document.getElementById('v-links');
+      container.innerHTML = '';
+      if (paste.title) {
+        var h = document.createElement('h2');
+        h.textContent = paste.title;
+        h.style.cssText = 'font-family:var(--serif);font-style:italic;color:var(--accent);font-size:22px;margin-bottom:20px';
+        container.appendChild(h);
+      }
+      items.forEach(function(item, i) {
+        var label = item.label ? item.label : ('Download Links \uD83D\uDD17');
+        var card = document.createElement('div');
+        card.className = 'link-card';
+        card.innerHTML = '<div class="link-title">' + esc(label) + '</div>' +
+          '<a class="link-btn" href="' + esc(item.url) + '" target="_blank" rel="noopener">Open \u2192</a>';
+        container.appendChild(card);
+      });
+      var d = new Date(paste.created_at);
+      document.getElementById('v-meta').textContent = 'PUBLISHED ' + d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}).toUpperCase();
+      showPage('view');
+    }).catch(function(){ showPage('nf'); });
+  }
+
+  function copyLink() {
+    var url = location.origin + location.pathname + '#view/' + currentSlug;
+    navigator.clipboard.writeText(url);
+    var btn = document.getElementById('v-copy-btn');
+    btn.textContent = 'copied!'; btn.style.color = 'var(--accent)';
+    setTimeout(function(){ btn.textContent = 'copy link'; btn.style.color = ''; }, 2000);
+  }
+
+  function goEdit() { location.hash = 'edit/' + currentSlug; }
+  function cancelEdit() { location.hash = 'view/' + currentSlug; }
+
+  function loadEditPage(slug) {
+    currentSlug = slug;
+    dbGet(slug).then(function(paste) {
+      if (!paste) { showPage('nf'); return; }
+      currentKey = paste.edit_key;
+      document.getElementById('e-slug').textContent = '/ ' + slug;
+      document.getElementById('e-title').value = paste.title || '';
+      var lines = '';
+      try {
+        var items = JSON.parse(paste.content);
+        lines = items.map(function(it){ return (it.label ? it.label + '\n' : '') + it.url; }).join('\n');
+      } catch(e) { lines = paste.content; }
+      document.getElementById('e-content').value = lines;
+      document.getElementById('e-key').value = '';
+      hideErr('e-error');
+      showPage('edit');
+    }).catch(function(){ showPage('nf'); });
+  }
+
+  function saveEdit() {
+    var key   = document.getElementById('e-key').value.trim();
+    var raw   = document.getElementById('e-content').value.trim();
+    var title = document.getElementById('e-title').value.trim();
+    if (!key) { showErr('e-error', 'Enter your edit key.'); return; }
+    if (key !== currentKey) { showErr('e-error', 'Wrong edit key.'); return; }
+    if (!raw) { showErr('e-error', 'Add at least one link.'); return; }
+    var btn = document.getElementById('save-btn');
+    btn.textContent = 'shortening...'; btn.disabled = true;
+    var items = parseLines(raw);
+    shortenItems(items).then(function(shortened) {
+      btn.textContent = 'saving...';
+      return dbUpdate(currentSlug, JSON.stringify(shortened), title).then(function(ok) {
+        if (!ok) throw new Error();
+        location.hash = 'view/' + currentSlug;
+        loadView(currentSlug);
+        btn.textContent = 'save \u2192'; btn.disabled = false;
+      });
+    }).catch(function() {
+      showErr('e-error', 'Save failed.');
+      btn.textContent = 'save \u2192'; btn.disabled = false;
+    });
+  }
+
+  window.addEventListener('hashchange', route);
+  route();
+</script>
+</body>
+</html>
